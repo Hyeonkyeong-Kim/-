@@ -697,15 +697,6 @@ function setStartDate(){
     ).textContent =
         dateKey(endDate);
 
-    /*
-       시작일 저장할 때 조회 기준일을
-       오늘 날짜로 자동 변경하는 기존 기능 유지
-    */
-    document.getElementById(
-        "checkDate"
-    ).value =
-        dateKey(new Date());
-
     document.getElementById(
         "balanceResult"
     ).innerHTML = "";
