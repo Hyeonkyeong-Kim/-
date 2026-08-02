@@ -64,12 +64,13 @@ button{
     font-family:inherit;
 }
 
-/* 입력칸 기본 */
+/* 날짜 / 숫자 입력칸 */
 input[type="date"],
 input[type="number"],
 textarea{
     width:100%;
     max-width:100%;
+    min-width:0;
     box-sizing:border-box;
     border:0;
     background:#f1f2f5;
@@ -81,29 +82,27 @@ textarea{
 
 /* 날짜 입력칸 */
 input[type="date"]{
-    display:block;
     width:100%;
-    max-width:100%;
-    min-width:0;
     height:46px;
     min-height:46px;
     max-height:46px;
+
     padding:0 13px;
+
+    /* 글자를 박스의 정확한 세로 중앙에 */
+    line-height:46px;
+
     text-align:center;
     text-align-last:center;
+
     -webkit-appearance:none;
     appearance:none;
 }
 
-/* 숫자 입력칸 */
-input[type="number"]{
-    height:46px;
-    min-height:46px;
-    padding:0 13px;
-}
-
-/* iPhone에서 날짜 표시 영역도 가운데 정렬 */
+/* iPhone Safari 날짜 글자 위치 보정 */
 input[type="date"]::-webkit-date-and-time-value{
+    height:46px;
+    line-height:46px;
     text-align:center;
 }
 
@@ -112,7 +111,10 @@ input[type="date"]::-webkit-datetime-edit{
 }
 
 input[type="date"]::-webkit-datetime-edit-fields-wrapper{
-    text-align:center;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:46px;
 }
 
 textarea{
@@ -238,20 +240,23 @@ button{
     color:#4d78df;
 }
 
+/* 선택된 근무일 - 항상 동일한 진한 파란색 */
 .day.selected{
     background:#5278ff;
     color:white !important;
     font-weight:700;
 }
 
+/* 시작일 */
 .day.start{
-    background:#00ae83 !important;
+    background:#00ae83;
     color:white !important;
     font-weight:700;
 }
 
+/* 종료일 */
 .day.end{
-    background:#ed6b6b !important;
+    background:#ed6b6b;
     color:white !important;
     font-weight:700;
 }
@@ -260,23 +265,11 @@ button{
     opacity:.25;
 }
 
+/* 미래 선택 근무일도 동일한 진한 파란색 */
 .day.futureSelected{
-    background:#9aaeff;
+    background:#5278ff;
     color:white !important;
     font-weight:700;
-}
-
-/* 시작일/종료일은 선택해도 원래 색상 유지 */
-.day.start.selected,
-.day.start.futureSelected{
-    background:#00ae83 !important;
-    color:white !important;
-}
-
-.day.end.selected,
-.day.end.futureSelected{
-    background:#ed6b6b !important;
-    color:white !important;
 }
 
 .small{
@@ -380,10 +373,6 @@ hr{
 <h1>적립금 관리</h1>
 
 
-<!-- =========================
-     적립 기간
-========================= -->
-
 <div class="card">
 
 <h2>① 적립 기간</h2>
@@ -413,10 +402,6 @@ hr{
 </div>
 
 
-
-<!-- =========================
-     달력
-========================= -->
 
 <div class="card">
 
@@ -503,10 +488,6 @@ hr{
 
 
 
-<!-- =========================
-     포인트 조회
-========================= -->
-
 <div class="card">
 
 <h2>③ 잔여 포인트 조회</h2>
@@ -544,10 +525,6 @@ hr{
 </div>
 
 
-
-<!-- =========================
-     메모
-========================= -->
 
 <div class="card">
 
@@ -589,10 +566,6 @@ hr{
 
 
 
-<!-- =========================
-     데이터 관리
-========================= -->
-
 <div class="card">
 
 <h2>⑤ 데이터 관리</h2>
@@ -628,49 +601,29 @@ hr{
 
 <script>
 
-
-/* =========================
-   기본 설정
-========================= */
-
 const POINT_PER_DAY = 4000;
-
 const EXPIRY_DAYS = 31;
 
-
 let startDate = null;
-
 let endDate = null;
-
 let selectedDays = new Set();
-
 let memoList = [];
 
 
-
-/* =========================
-   날짜
-========================= */
-
 function dateKey(date){
 
-    const y =
-        date.getFullYear();
+    const y = date.getFullYear();
 
     const m =
-        String(
-            date.getMonth()+1
-        ).padStart(2,"0");
+        String(date.getMonth()+1)
+        .padStart(2,"0");
 
     const d =
-        String(
-            date.getDate()
-        ).padStart(2,"0");
+        String(date.getDate())
+        .padStart(2,"0");
 
     return `${y}-${m}-${d}`;
-
 }
-
 
 
 function parseDate(str){
@@ -682,32 +635,22 @@ function parseDate(str){
         m,
         d
     ] =
-        str.split("-")
-        .map(Number);
+        str.split("-").map(Number);
 
-    return new Date(
-        y,
-        m-1,
-        d
-    );
-
+    return new Date(y,m-1,d);
 }
-
 
 
 function addDays(date,days){
 
-    const d =
-        new Date(date);
+    const d = new Date(date);
 
     d.setDate(
         d.getDate()+days
     );
 
     return d;
-
 }
-
 
 
 function money(value){
@@ -715,7 +658,6 @@ function money(value){
     return Number(
         value || 0
     ).toLocaleString("ko-KR")+"원";
-
 }
 
 
@@ -731,7 +673,6 @@ function setStartDate(){
             "startDate"
         ).value;
 
-
     if(!value){
 
         alert(
@@ -739,13 +680,9 @@ function setStartDate(){
         );
 
         return;
-
     }
 
-
-    startDate =
-        parseDate(value);
-
+    startDate = parseDate(value);
 
     endDate =
         addDays(
@@ -753,35 +690,31 @@ function setStartDate(){
             EXPIRY_DAYS
         );
 
-
     selectedDays.clear();
-
 
     document.getElementById(
         "endDate"
     ).textContent =
         dateKey(endDate);
 
-
+    /*
+       시작일 저장할 때 조회 기준일을
+       오늘 날짜로 자동 변경하는 기존 기능 유지
+    */
     document.getElementById(
         "checkDate"
     ).value =
-        dateKey(
-            new Date()
-        );
-
+        dateKey(new Date());
 
     document.getElementById(
         "balanceResult"
     ).innerHTML = "";
-
 
     drawCalendars();
 
     updateSummary();
 
     saveAll();
-
 }
 
 
@@ -797,9 +730,7 @@ function drawCalendars(){
             "calendarArea"
         );
 
-
     area.innerHTML="";
-
 
     if(!startDate){
 
@@ -811,16 +742,13 @@ function drawCalendars(){
         `;
 
         return;
-
     }
-
 
     drawMonth(
         startDate.getFullYear(),
         startDate.getMonth(),
         area
     );
-
 
     const next =
         new Date(
@@ -829,15 +757,12 @@ function drawCalendars(){
             1
         );
 
-
     drawMonth(
         next.getFullYear(),
         next.getMonth(),
         area
     );
-
 }
-
 
 
 function drawMonth(
@@ -865,8 +790,7 @@ function drawMonth(
             "div"
         );
 
-    week.className =
-        "week";
+    week.className = "week";
 
 
     [
@@ -885,21 +809,15 @@ function drawMonth(
                     "div"
                 );
 
-            el.textContent =
-                name;
+            el.textContent = name;
 
             if(index===0)
-                el.style.color =
-                    "#e85b5b";
+                el.style.color="#e85b5b";
 
             if(index===6)
-                el.style.color =
-                    "#4d78df";
+                el.style.color="#4d78df";
 
-            week.appendChild(
-                el
-            );
-
+            week.appendChild(el);
         }
     );
 
@@ -912,8 +830,7 @@ function drawMonth(
             "div"
         );
 
-    calendar.className =
-        "calendar";
+    calendar.className = "calendar";
 
 
     const first =
@@ -946,10 +863,7 @@ function drawMonth(
         empty.className =
             "day outside";
 
-        calendar.appendChild(
-            empty
-        );
-
+        calendar.appendChild(empty);
     }
 
 
@@ -966,9 +880,7 @@ function drawMonth(
                 day
             );
 
-
-        const key =
-            dateKey(date);
+        const key = dateKey(date);
 
 
         const el =
@@ -976,24 +888,16 @@ function drawMonth(
                 "div"
             );
 
+        el.className = "day";
 
-        el.className =
-            "day";
-
-        el.textContent =
-            day;
+        el.textContent = day;
 
 
         if(date.getDay()===0)
-            el.classList.add(
-                "sunday"
-            );
-
+            el.classList.add("sunday");
 
         if(date.getDay()===6)
-            el.classList.add(
-                "saturday"
-            );
+            el.classList.add("saturday");
 
 
         if(
@@ -1001,66 +905,44 @@ function drawMonth(
             date > endDate
         ){
 
-            el.classList.add(
-                "outside"
-            );
-
+            el.classList.add("outside");
         }
 
 
+        /*
+           시작일은 항상 초록색.
+           selected 색상으로 덮어쓰지 않음.
+        */
         if(
             key === dateKey(startDate)
         ){
 
-            el.classList.add(
-                "start"
-            );
-
+            el.classList.add("start");
         }
 
 
+        /*
+           종료일은 항상 빨간색.
+        */
         if(
             key === dateKey(endDate)
         ){
 
-            el.classList.add(
-                "end"
-            );
-
+            el.classList.add("end");
         }
 
 
+        /*
+           시작일/종료일을 제외한
+           선택 근무일만 파란색 처리
+        */
         if(
-            selectedDays.has(key)
+            selectedDays.has(key) &&
+            key !== dateKey(startDate) &&
+            key !== dateKey(endDate)
         ){
 
-            const checkValue =
-                document.getElementById(
-                    "checkDate"
-                ).value;
-
-            const check =
-                parseDate(checkValue);
-
-
-            if(
-                check &&
-                date > check
-            ){
-
-                el.classList.add(
-                    "futureSelected"
-                );
-
-            }
-            else{
-
-                el.classList.add(
-                    "selected"
-                );
-
-            }
-
+            el.classList.add("selected");
         }
 
 
@@ -1069,9 +951,7 @@ function drawMonth(
             date <= endDate
         ){
 
-            el.classList.add(
-                "clickable"
-            );
+            el.classList.add("clickable");
 
 
             el.onclick =
@@ -1081,42 +961,29 @@ function drawMonth(
                     selectedDays.has(key)
                 ){
 
-                    selectedDays.delete(
-                        key
-                    );
+                    selectedDays.delete(key);
 
                 }
                 else{
 
-                    selectedDays.add(
-                        key
-                    );
+                    selectedDays.add(key);
 
                 }
-
 
                 drawCalendars();
 
                 updateSummary();
 
                 saveAll();
-
             };
-
         }
 
 
-        calendar.appendChild(
-            el
-        );
-
+        calendar.appendChild(el);
     }
 
 
-    area.appendChild(
-        calendar
-    );
-
+    area.appendChild(calendar);
 }
 
 
@@ -1138,7 +1005,6 @@ function updateSummary(){
 
 
     let untilCount = 0;
-
     let futureCount = 0;
 
 
@@ -1163,9 +1029,7 @@ function updateSummary(){
                 else{
 
                     futureCount++;
-
                 }
-
             }
         );
 
@@ -1174,7 +1038,6 @@ function updateSummary(){
 
         untilCount =
             selectedDays.size;
-
     }
 
 
@@ -1213,23 +1076,15 @@ function updateSummary(){
 
 
     drawCalendarsIfReady();
-
 }
 
-
-
-/* =========================
-   요약 변경 시 달력 갱신
-========================= */
 
 function drawCalendarsIfReady(){
 
     if(startDate){
 
         drawCalendars();
-
     }
-
 }
 
 
@@ -1247,7 +1102,6 @@ function calculateBalance(){
         );
 
         return;
-
     }
 
 
@@ -1272,7 +1126,6 @@ function calculateBalance(){
         );
 
         return;
-
     }
 
 
@@ -1286,7 +1139,6 @@ function calculateBalance(){
         );
 
         return;
-
     }
 
 
@@ -1301,21 +1153,14 @@ function calculateBalance(){
         );
 
         return;
-
     }
 
 
     const lots =
         [...selectedDays]
-        .map(
-            x=>parseDate(x)
-        )
-        .filter(
-            date=>date <= check
-        )
-        .sort(
-            (a,b)=>a-b
-        );
+        .map(x=>parseDate(x))
+        .filter(date=>date <= check)
+        .sort((a,b)=>a-b);
 
 
     if(lots.length===0){
@@ -1343,13 +1188,10 @@ function calculateBalance(){
         `;
 
         return;
-
     }
 
 
-    let remaining =
-        balance;
-
+    let remaining = balance;
 
     const data=[];
 
@@ -1386,12 +1228,10 @@ function calculateBalance(){
                 );
 
             remaining -= amount;
-
         }
 
 
         let status="";
-
         let className="";
 
 
@@ -1399,29 +1239,21 @@ function calculateBalance(){
             check >= expiry
         ){
 
-            status =
-                "소멸됨";
-
-            className =
-                "statusExpired";
+            status="소멸됨";
+            className="statusExpired";
 
         }
         else if(
             amount > 0
         ){
 
-            status =
-                "현재 남아있음";
-
-            className =
-                "statusAlive";
+            status="현재 남아있음";
+            className="statusAlive";
 
         }
         else{
 
-            status =
-                "사용된 것으로 추정";
-
+            status="사용된 것으로 추정";
         }
 
 
@@ -1434,7 +1266,6 @@ function calculateBalance(){
             className
 
         });
-
     }
 
 
@@ -1443,15 +1274,9 @@ function calculateBalance(){
 
     const futureLots =
         [...selectedDays]
-        .map(
-            x=>parseDate(x)
-        )
-        .filter(
-            date=>date > check
-        )
-        .sort(
-            (a,b)=>a-b
-        );
+        .map(x=>parseDate(x))
+        .filter(date=>date > check)
+        .sort((a,b)=>a-b);
 
 
     let html =
@@ -1516,7 +1341,6 @@ function calculateBalance(){
                 소멸까지 약
                 ${daysLeft}일
                 `;
-
             }
 
 
@@ -1564,7 +1388,6 @@ function calculateBalance(){
 
             </div>
             `;
-
         }
     );
 
@@ -1594,7 +1417,6 @@ function calculateBalance(){
 
         </div>
         `;
-
     }
 
 
@@ -1620,15 +1442,12 @@ function calculateBalance(){
 
         </div>
         `;
-
     }
 
 
     document.getElementById(
         "balanceResult"
-    ).innerHTML =
-        html;
-
+    ).innerHTML = html;
 }
 
 
@@ -1656,35 +1475,26 @@ function saveMemo(){
         );
 
         return;
-
     }
 
 
-    const now =
-        new Date();
+    const now = new Date();
 
 
     const record={
 
-        id:
-            Date.now(),
+        id:Date.now(),
 
         date:
             formatDateTime(now),
 
-        text:
-            text
-
+        text:text
     };
 
 
-    memoList.unshift(
-        record
-    );
-
+    memoList.unshift(record);
 
     textarea.value="";
-
 
     renderMemos();
 
@@ -1695,14 +1505,8 @@ function saveMemo(){
         "memoSaved"
     ).textContent =
         "메모가 저장됐어요.";
-
 }
 
-
-
-/* =========================
-   날짜+시간 표시
-========================= */
 
 function formatDateTime(date){
 
@@ -1731,13 +1535,12 @@ function formatDateTime(date){
 
 
     return `${y}.${m}.${d} ${h}:${min}`;
-
 }
 
 
 
 /* =========================
-   메모 화면 표시
+   메모 표시
 ========================= */
 
 function renderMemos(){
@@ -1763,7 +1566,6 @@ function renderMemos(){
         `;
 
         return;
-
     }
 
 
@@ -1775,8 +1577,7 @@ function renderMemos(){
                     "div"
                 );
 
-            item.className =
-                "memoItem";
+            item.className="memoItem";
 
 
             const date =
@@ -1784,8 +1585,7 @@ function renderMemos(){
                     "div"
                 );
 
-            date.className =
-                "memoDate";
+            date.className="memoDate";
 
             date.textContent =
                 memo.date;
@@ -1796,8 +1596,7 @@ function renderMemos(){
                     "div"
                 );
 
-            text.className =
-                "memoText";
+            text.className="memoText";
 
             text.textContent =
                 memo.text;
@@ -1808,8 +1607,7 @@ function renderMemos(){
                     "button"
                 );
 
-            del.className =
-                "memoDelete";
+            del.className="memoDelete";
 
             del.textContent =
                 "이 메모 삭제";
@@ -1818,40 +1616,19 @@ function renderMemos(){
             del.onclick =
             function(){
 
-                deleteMemo(
-                    memo.id
-                );
-
+                deleteMemo(memo.id);
             };
 
 
-            item.appendChild(
-                date
-            );
+            item.appendChild(date);
+            item.appendChild(text);
+            item.appendChild(del);
 
-            item.appendChild(
-                text
-            );
-
-            item.appendChild(
-                del
-            );
-
-
-            area.appendChild(
-                item
-            );
-
+            area.appendChild(item);
         }
     );
-
 }
 
-
-
-/* =========================
-   메모 하나 삭제
-========================= */
 
 function deleteMemo(id){
 
@@ -1865,7 +1642,6 @@ function deleteMemo(id){
     renderMemos();
 
     saveAll();
-
 }
 
 
@@ -1885,7 +1661,6 @@ function clearMemos(){
         );
 
         return;
-
     }
 
 
@@ -1900,7 +1675,6 @@ function clearMemos(){
 
     memoList=[];
 
-
     renderMemos();
 
     saveAll();
@@ -1910,7 +1684,6 @@ function clearMemos(){
         "memoSaved"
     ).textContent =
         "메모 기록을 모두 삭제했어요.";
-
 }
 
 
@@ -1947,7 +1720,6 @@ function saveAll(){
 
         memoList:
             memoList
-
     };
 
 
@@ -1959,13 +1731,7 @@ function saveAll(){
         );
 
     }
-    catch(e){
-
-        // 저장공간을 지원하지 않는 환경에서는
-        // 현재 화면에서만 유지
-
-    }
-
+    catch(e){}
 }
 
 
@@ -1990,7 +1756,6 @@ function loadAll(){
     catch(e){
 
         raw=null;
-
     }
 
 
@@ -2027,7 +1792,6 @@ function loadAll(){
                     "endDate"
                 ).textContent =
                     dateKey(endDate);
-
             }
 
 
@@ -2043,6 +1807,10 @@ function loadAll(){
                 data.balance || "";
 
 
+            /*
+               저장된 조회 기준일이 있을 때만 넣음.
+               없으면 빈칸 유지.
+            */
             document.getElementById(
                 "checkDate"
             ).value =
@@ -2062,18 +1830,20 @@ function loadAll(){
         catch(e){
 
             memoList=[];
-
         }
-
     }
 
+
+    /*
+       여기서 오늘 날짜를 자동으로 넣지 않음.
+       그래서 초기화 후 조회 기준일이 다시 생기지 않음.
+    */
 
     drawCalendars();
 
     updateSummary();
 
     renderMemos();
-
 }
 
 
@@ -2093,7 +1863,6 @@ function resetAll(){
     if(!ok){
 
         return;
-
     }
 
 
@@ -2117,7 +1886,10 @@ function resetAll(){
     ).textContent="-";
 
 
-    /* 조회 기준일 완전 초기화 */
+    /*
+       조회 기준일 완전 초기화
+       → 오늘 날짜도 넣지 않음
+    */
     document.getElementById(
         "checkDate"
     ).value="";
@@ -2144,6 +1916,9 @@ function resetAll(){
         "전체 데이터를 초기화했어요.";
 
 
+    /*
+       localStorage도 완전히 삭제
+    */
     try{
 
         localStorage.removeItem(
@@ -2159,7 +1934,6 @@ function resetAll(){
     updateSummary();
 
     renderMemos();
-
 }
 
 
