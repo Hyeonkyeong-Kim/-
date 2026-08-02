@@ -70,7 +70,6 @@ textarea{
     width:100%;
     max-width:100%;
     min-width:0;
-    display:block;
     box-sizing:border-box;
     border:0;
     background:#f1f2f5;
@@ -80,13 +79,15 @@ textarea{
     outline:none;
 }
 
+/* 날짜 입력창 크기 고정
+   appearance는 건드리지 않음 */
 input[type="date"]{
-    height:46px;
-    min-height:46px;
     width:100%;
     max-width:100%;
+    min-width:0;
+    height:46px;
+    min-height:46px;
     box-sizing:border-box;
-}
 }
 
 textarea{
