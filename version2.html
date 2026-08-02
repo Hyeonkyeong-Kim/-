@@ -64,12 +64,12 @@ button{
     font-family:inherit;
 }
 
+/* 날짜/숫자 입력칸 */
 input[type="date"],
 input[type="number"],
 textarea{
     width:100%;
     max-width:100%;
-    min-width:0;
     box-sizing:border-box;
     border:0;
     background:#f1f2f5;
@@ -79,14 +79,16 @@ textarea{
     outline:none;
 }
 
-/* 날짜 입력창 크기 고정 */
+/* 날짜 입력칸 크기 및 가운데 정렬 */
 input[type="date"]{
     width:100%;
+    min-width:0;
+    max-width:100%;
     height:46px;
     min-height:46px;
-    max-height:46px;
-    padding:0 12px;
-    display:block;
+    padding:0 13px;
+    text-align:center;
+    text-align-last:center;
     -webkit-appearance:none;
     appearance:none;
 }
@@ -1268,11 +1270,6 @@ function calculateBalance(){
     }
 
 
-    /*
-       조회 기준일 이후의 근무일은
-       아직 적립되지 않은 것으로 취급한다.
-    */
-
     const lots =
         [...selectedDays]
         .map(
@@ -2014,8 +2011,7 @@ function loadAll(){
             document.getElementById(
                 "checkDate"
             ).value =
-                data.checkDate ||
-                dateKey(new Date());
+                data.checkDate || "";
 
 
             memoList =
@@ -2033,22 +2029,6 @@ function loadAll(){
             memoList=[];
 
         }
-
-    }
-
-
-    if(
-        !document.getElementById(
-            "checkDate"
-        ).value
-    ){
-
-        document.getElementById(
-            "checkDate"
-        ).value =
-            dateKey(
-                new Date()
-            );
 
     }
 
@@ -2102,12 +2082,10 @@ function resetAll(){
     ).textContent="-";
 
 
+    /* 조회 기준일 완전 초기화 */
     document.getElementById(
         "checkDate"
-    ).value =
-        dateKey(
-            new Date()
-        );
+    ).value="";
 
 
     document.getElementById(
