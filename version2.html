@@ -68,12 +68,24 @@ input[type="date"],
 input[type="number"],
 textarea{
     width:100%;
+    max-width:100%;
+    min-width:0;
+    display:block;
+    box-sizing:border-box;
     border:0;
     background:#f1f2f5;
     border-radius:12px;
     padding:13px;
     font-size:16px;
     outline:none;
+}
+
+input[type="date"]{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    max-width:100%;
+    min-width:0;
 }
 
 textarea{
