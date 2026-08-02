@@ -58,51 +58,53 @@ label{
     margin-bottom:7px;
 }
 
-/* ✅ 공통 폼 요소 스타일 통합 */
 input,
 textarea,
 button{
+    font-family:inherit;
+}
+
+input[type="date"],
+input[type="number"],
+textarea{
     width:100%;
     max-width:100%;
     min-width:0;
     box-sizing:border-box;
-
-    font-family:inherit;
-    font-size:16px;
-
     border:0;
+    background:#f1f2f5;
     border-radius:12px;
-
+    padding:13px;
+    font-size:16px;
     outline:none;
 }
 
-/* ✅ input / textarea 공통 배경 */
-input,
-textarea{
-    background:#f1f2f5;
-    padding:13px;
-}
-
-/* ✅ date input만 높이 보정 */
+/* 날짜 입력창 크기 고정 */
 input[type="date"]{
+    width:100%;
     height:46px;
-    padding:10px 12px;
+    min-height:46px;
+    max-height:46px;
+    padding:0 12px;
+    display:block;
+    -webkit-appearance:none;
+    appearance:none;
 }
 
-/* textarea만 별도 */
 textarea{
     min-height:110px;
     resize:none;
 }
 
-/* button만 스타일 분리 */
 button{
+    border:0;
+    border-radius:12px;
     padding:13px 15px;
+    font-size:16px;
     font-weight:600;
     cursor:pointer;
 }
 
-/* 버튼 타입 */
 .primary{
     width:100%;
     background:#5278ff;
@@ -152,9 +154,17 @@ button{
     font-weight:700;
 }
 
-.blue{ color:#5278ff; }
-.red{ color:#e45757; }
-.green{ color:#00a878; }
+.blue{
+    color:#5278ff;
+}
+
+.red{
+    color:#e45757;
+}
+
+.green{
+    color:#00a878;
+}
 
 .calendarTitle{
     font-size:18px;
@@ -192,9 +202,17 @@ button{
     position:relative;
 }
 
-.day.clickable{ cursor:pointer; }
-.day.sunday{ color:#e85b5b; }
-.day.saturday{ color:#4d78df; }
+.day.clickable{
+    cursor:pointer;
+}
+
+.day.sunday{
+    color:#e85b5b;
+}
+
+.day.saturday{
+    color:#4d78df;
+}
 
 .day.selected{
     background:#5278ff;
@@ -214,7 +232,9 @@ button{
     font-weight:700;
 }
 
-.day.outside{ opacity:.25; }
+.day.outside{
+    opacity:.25;
+}
 
 .day.futureSelected{
     background:#9aaeff;
@@ -249,9 +269,20 @@ button{
     line-height:1.7;
 }
 
-.statusAlive{ color:#00a878; font-weight:700; }
-.statusExpired{ color:#e45757; font-weight:700; }
-.statusFuture{ color:#5278ff; font-weight:700; }
+.statusAlive{
+    color:#00a878;
+    font-weight:700;
+}
+
+.statusExpired{
+    color:#e45757;
+    font-weight:700;
+}
+
+.statusFuture{
+    color:#5278ff;
+    font-weight:700;
+}
 
 .memoItem{
     background:#f6f7fa;
@@ -304,9 +335,1829 @@ hr{
 </style>
 </head>
 
+
 <body>
 
-<!-- 기존 HTML/JS 그대로 유지 -->
+<div class="container">
+
+<h1>적립금 관리</h1>
+
+
+<!-- =========================
+     적립 기간
+========================= -->
+
+<div class="card">
+
+<h2>① 적립 기간</h2>
+
+<label>적립 시작일</label>
+
+<input
+    type="date"
+    id="startDate"
+>
+
+<button
+    class="primary"
+    onclick="setStartDate()"
+>
+시작일 저장
+</button>
+
+<div class="result">
+
+<strong>종료일</strong>
+
+<span id="endDate">-</span>
+
+</div>
+
+</div>
+
+
+
+<!-- =========================
+     달력
+========================= -->
+
+<div class="card">
+
+<h2>② 근무일 선택</h2>
+
+<div class="small">
+날짜를 눌러 근무일을 선택/해제하세요.<br>
+미리 앞으로의 근무일을 선택해둘 수 있습니다.<br>
+조회 기준일 이후의 근무일은 현재 적립금에는 포함되지 않습니다.
+</div>
+
+<div id="calendarArea"></div>
+
+<hr>
+
+<div class="summary">
+
+<div class="summaryBox">
+
+<div class="title">
+전체 선택 근무일
+</div>
+
+<div
+    class="value blue"
+    id="workDays"
+>
+0일
+</div>
+
+</div>
+
+
+<div class="summaryBox">
+
+<div class="title">
+조회일까지 근무일
+</div>
+
+<div
+    class="value green"
+    id="workedUntilCheck"
+>
+0일
+</div>
+
+</div>
+
+
+<div class="summaryBox">
+
+<div class="title">
+조회일까지 적립
+</div>
+
+<div
+    class="value blue"
+    id="earnedMoney"
+>
+0원
+</div>
+
+</div>
+
+
+<div class="summaryBox">
+
+<div class="title">
+예정 적립금
+</div>
+
+<div
+    class="value red"
+    id="futureMoney"
+>
+0원
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- =========================
+     포인트 조회
+========================= -->
+
+<div class="card">
+
+<h2>③ 잔여 포인트 조회</h2>
+
+<label>조회 기준일</label>
+
+<input
+    type="date"
+    id="checkDate"
+    onchange="updateSummary()"
+>
+
+<br><br>
+
+<label>
+현재 잔여 포인트
+</label>
+
+<input
+    type="number"
+    id="balance"
+    inputmode="numeric"
+    placeholder="예: 3000"
+>
+
+<button
+    class="primary"
+    onclick="calculateBalance()"
+>
+잔여 포인트 기준으로 조회
+</button>
+
+<div id="balanceResult"></div>
+
+</div>
+
+
+
+<!-- =========================
+     메모
+========================= -->
+
+<div class="card">
+
+<h2>④ 메모</h2>
+
+<textarea
+    id="memo"
+    placeholder="예: 8/3에 3,000원 남아있음&#10;8/4 포인트 사용 예정"
+></textarea>
+
+<button
+    class="primary"
+    onclick="saveMemo()"
+>
+메모 저장
+</button>
+
+<div
+    class="noteSaved"
+    id="memoSaved"
+></div>
+
+<hr>
+
+<div class="row">
+
+<button
+    class="secondary"
+    onclick="clearMemos()"
+>
+메모 전체 삭제
+</button>
+
+</div>
+
+<div id="memoList"></div>
+
+</div>
+
+
+
+<!-- =========================
+     데이터 관리
+========================= -->
+
+<div class="card">
+
+<h2>⑤ 데이터 관리</h2>
+
+<div class="row">
+
+<button
+    class="secondary"
+    onclick="saveAll()"
+>
+전체 저장
+</button>
+
+<button
+    class="danger"
+    onclick="resetAll()"
+>
+초기화
+</button>
+
+</div>
+
+<p class="small">
+저장 기능을 지원하는 환경에서는 데이터를 기기에 저장합니다.
+</p>
+
+</div>
+
+
+</div>
+
+
+
+<script>
+
+
+/* =========================
+   기본 설정
+========================= */
+
+const POINT_PER_DAY = 4000;
+
+const EXPIRY_DAYS = 31;
+
+
+let startDate = null;
+
+let endDate = null;
+
+let selectedDays = new Set();
+
+let memoList = [];
+
+
+
+/* =========================
+   날짜
+========================= */
+
+function dateKey(date){
+
+    const y =
+        date.getFullYear();
+
+    const m =
+        String(
+            date.getMonth()+1
+        ).padStart(2,"0");
+
+    const d =
+        String(
+            date.getDate()
+        ).padStart(2,"0");
+
+    return `${y}-${m}-${d}`;
+
+}
+
+
+
+function parseDate(str){
+
+    if(!str) return null;
+
+    const [
+        y,
+        m,
+        d
+    ] =
+        str.split("-")
+        .map(Number);
+
+    return new Date(
+        y,
+        m-1,
+        d
+    );
+
+}
+
+
+
+function addDays(date,days){
+
+    const d =
+        new Date(date);
+
+    d.setDate(
+        d.getDate()+days
+    );
+
+    return d;
+
+}
+
+
+
+function money(value){
+
+    return Number(
+        value || 0
+    ).toLocaleString("ko-KR")+"원";
+
+}
+
+
+
+/* =========================
+   시작일
+========================= */
+
+function setStartDate(){
+
+    const value =
+        document.getElementById(
+            "startDate"
+        ).value;
+
+
+    if(!value){
+
+        alert(
+            "시작일을 선택해주세요."
+        );
+
+        return;
+
+    }
+
+
+    startDate =
+        parseDate(value);
+
+
+    endDate =
+        addDays(
+            startDate,
+            EXPIRY_DAYS
+        );
+
+
+    selectedDays.clear();
+
+
+    document.getElementById(
+        "endDate"
+    ).textContent =
+        dateKey(endDate);
+
+
+    document.getElementById(
+        "checkDate"
+    ).value =
+        dateKey(
+            new Date()
+        );
+
+
+    document.getElementById(
+        "balanceResult"
+    ).innerHTML = "";
+
+
+    drawCalendars();
+
+    updateSummary();
+
+    saveAll();
+
+}
+
+
+
+/* =========================
+   달력
+========================= */
+
+function drawCalendars(){
+
+    const area =
+        document.getElementById(
+            "calendarArea"
+        );
+
+
+    area.innerHTML="";
+
+
+    if(!startDate){
+
+        area.innerHTML =
+        `
+        <p class="small">
+        먼저 적립 시작일을 선택해주세요.
+        </p>
+        `;
+
+        return;
+
+    }
+
+
+    drawMonth(
+        startDate.getFullYear(),
+        startDate.getMonth(),
+        area
+    );
+
+
+    const next =
+        new Date(
+            startDate.getFullYear(),
+            startDate.getMonth()+1,
+            1
+        );
+
+
+    drawMonth(
+        next.getFullYear(),
+        next.getMonth(),
+        area
+    );
+
+}
+
+
+
+function drawMonth(
+    year,
+    month,
+    area
+){
+
+    const title =
+        document.createElement(
+            "div"
+        );
+
+    title.className =
+        "calendarTitle";
+
+    title.textContent =
+        `${year}년 ${month+1}월`;
+
+    area.appendChild(title);
+
+
+    const week =
+        document.createElement(
+            "div"
+        );
+
+    week.className =
+        "week";
+
+
+    [
+        "일",
+        "월",
+        "화",
+        "수",
+        "목",
+        "금",
+        "토"
+    ].forEach(
+        (name,index)=>{
+
+            const el =
+                document.createElement(
+                    "div"
+                );
+
+            el.textContent =
+                name;
+
+            if(index===0)
+                el.style.color =
+                    "#e85b5b";
+
+            if(index===6)
+                el.style.color =
+                    "#4d78df";
+
+            week.appendChild(
+                el
+            );
+
+        }
+    );
+
+
+    area.appendChild(week);
+
+
+    const calendar =
+        document.createElement(
+            "div"
+        );
+
+    calendar.className =
+        "calendar";
+
+
+    const first =
+        new Date(
+            year,
+            month,
+            1
+        );
+
+
+    const last =
+        new Date(
+            year,
+            month+1,
+            0
+        );
+
+
+    for(
+        let i=0;
+        i<first.getDay();
+        i++
+    ){
+
+        const empty =
+            document.createElement(
+                "div"
+            );
+
+        empty.className =
+            "day outside";
+
+        calendar.appendChild(
+            empty
+        );
+
+    }
+
+
+    for(
+        let day=1;
+        day<=last.getDate();
+        day++
+    ){
+
+        const date =
+            new Date(
+                year,
+                month,
+                day
+            );
+
+
+        const key =
+            dateKey(date);
+
+
+        const el =
+            document.createElement(
+                "div"
+            );
+
+
+        el.className =
+            "day";
+
+        el.textContent =
+            day;
+
+
+        if(date.getDay()===0)
+            el.classList.add(
+                "sunday"
+            );
+
+
+        if(date.getDay()===6)
+            el.classList.add(
+                "saturday"
+            );
+
+
+        if(
+            date < startDate ||
+            date > endDate
+        ){
+
+            el.classList.add(
+                "outside"
+            );
+
+        }
+
+
+        if(
+            key === dateKey(startDate)
+        ){
+
+            el.classList.add(
+                "start"
+            );
+
+        }
+
+
+        if(
+            key === dateKey(endDate)
+        ){
+
+            el.classList.add(
+                "end"
+            );
+
+        }
+
+
+        if(
+            selectedDays.has(key)
+        ){
+
+            const checkValue =
+                document.getElementById(
+                    "checkDate"
+                ).value;
+
+            const check =
+                parseDate(checkValue);
+
+
+            if(
+                check &&
+                date > check
+            ){
+
+                el.classList.add(
+                    "futureSelected"
+                );
+
+            }
+            else{
+
+                el.classList.add(
+                    "selected"
+                );
+
+            }
+
+        }
+
+
+        if(
+            date >= startDate &&
+            date <= endDate
+        ){
+
+            el.classList.add(
+                "clickable"
+            );
+
+
+            el.onclick =
+            function(){
+
+                if(
+                    selectedDays.has(key)
+                ){
+
+                    selectedDays.delete(
+                        key
+                    );
+
+                }
+                else{
+
+                    selectedDays.add(
+                        key
+                    );
+
+                }
+
+
+                drawCalendars();
+
+                updateSummary();
+
+                saveAll();
+
+            };
+
+        }
+
+
+        calendar.appendChild(
+            el
+        );
+
+    }
+
+
+    area.appendChild(
+        calendar
+    );
+
+}
+
+
+
+/* =========================
+   요약
+========================= */
+
+function updateSummary(){
+
+    const count =
+        selectedDays.size;
+
+
+    const checkValue =
+        document.getElementById(
+            "checkDate"
+        ).value;
+
+
+    let untilCount = 0;
+
+    let futureCount = 0;
+
+
+    if(checkValue){
+
+        const check =
+            parseDate(checkValue);
+
+
+        selectedDays.forEach(
+            key=>{
+
+                const date =
+                    parseDate(key);
+
+
+                if(date <= check){
+
+                    untilCount++;
+
+                }
+                else{
+
+                    futureCount++;
+
+                }
+
+            }
+        );
+
+    }
+    else{
+
+        untilCount =
+            selectedDays.size;
+
+    }
+
+
+    const earned =
+        untilCount *
+        POINT_PER_DAY;
+
+
+    const futureMoney =
+        futureCount *
+        POINT_PER_DAY;
+
+
+    document.getElementById(
+        "workDays"
+    ).textContent =
+        count+"일";
+
+
+    document.getElementById(
+        "workedUntilCheck"
+    ).textContent =
+        untilCount+"일";
+
+
+    document.getElementById(
+        "earnedMoney"
+    ).textContent =
+        money(earned);
+
+
+    document.getElementById(
+        "futureMoney"
+    ).textContent =
+        money(futureMoney);
+
+
+    drawCalendarsIfReady();
+
+}
+
+
+
+/* =========================
+   요약 변경 시 달력 갱신
+========================= */
+
+function drawCalendarsIfReady(){
+
+    if(startDate){
+
+        drawCalendars();
+
+    }
+
+}
+
+
+
+/* =========================
+   포인트 조회
+========================= */
+
+function calculateBalance(){
+
+    if(!startDate){
+
+        alert(
+            "먼저 적립 시작일을 저장해주세요."
+        );
+
+        return;
+
+    }
+
+
+    const checkValue =
+        document.getElementById(
+            "checkDate"
+        ).value;
+
+
+    const balance =
+        Number(
+            document.getElementById(
+                "balance"
+            ).value
+        );
+
+
+    if(!checkValue){
+
+        alert(
+            "조회 기준일을 선택해주세요."
+        );
+
+        return;
+
+    }
+
+
+    if(
+        isNaN(balance) ||
+        balance < 0
+    ){
+
+        alert(
+            "잔여 포인트를 입력해주세요."
+        );
+
+        return;
+
+    }
+
+
+    const check =
+        parseDate(checkValue);
+
+
+    if(check < startDate){
+
+        alert(
+            "조회 기준일은 적립 시작일 이후 날짜로 선택해주세요."
+        );
+
+        return;
+
+    }
+
+
+    /*
+       조회 기준일 이후의 근무일은
+       아직 적립되지 않은 것으로 취급한다.
+    */
+
+    const lots =
+        [...selectedDays]
+        .map(
+            x=>parseDate(x)
+        )
+        .filter(
+            date=>date <= check
+        )
+        .sort(
+            (a,b)=>a-b
+        );
+
+
+    if(lots.length===0){
+
+        document.getElementById(
+            "balanceResult"
+        ).innerHTML =
+        `
+        <div class="result">
+
+        <strong>
+        조회일: ${dateKey(check)}
+        </strong>
+
+        조회 기준일까지 선택된 근무일이 없습니다.
+
+        <br><br>
+
+        현재 잔여 포인트:
+        <b class="blue">
+        ${money(balance)}
+        </b>
+
+        </div>
+        `;
+
+        return;
+
+    }
+
+
+    let remaining =
+        balance;
+
+
+    const data=[];
+
+
+    for(
+        let i=lots.length-1;
+        i>=0;
+        i--
+    ){
+
+        const earnedDate =
+            lots[i];
+
+
+        const expiry =
+            addDays(
+                earnedDate,
+                EXPIRY_DAYS
+            );
+
+
+        let amount=0;
+
+
+        if(
+            check < expiry &&
+            remaining > 0
+        ){
+
+            amount =
+                Math.min(
+                    POINT_PER_DAY,
+                    remaining
+                );
+
+            remaining -= amount;
+
+        }
+
+
+        let status="";
+
+        let className="";
+
+
+        if(
+            check >= expiry
+        ){
+
+            status =
+                "소멸됨";
+
+            className =
+                "statusExpired";
+
+        }
+        else if(
+            amount > 0
+        ){
+
+            status =
+                "현재 남아있음";
+
+            className =
+                "statusAlive";
+
+        }
+        else{
+
+            status =
+                "사용된 것으로 추정";
+
+        }
+
+
+        data.push({
+
+            earnedDate,
+            expiry,
+            amount,
+            status,
+            className
+
+        });
+
+    }
+
+
+    data.reverse();
+
+
+    const futureLots =
+        [...selectedDays]
+        .map(
+            x=>parseDate(x)
+        )
+        .filter(
+            date=>date > check
+        )
+        .sort(
+            (a,b)=>a-b
+        );
+
+
+    let html =
+    `
+    <div class="result">
+
+    <strong>
+    조회일: ${dateKey(check)}
+    </strong>
+
+    현재 잔여 포인트:
+    <b class="blue">
+    ${money(balance)}
+    </b>
+
+    </div>
+
+    <div class="result">
+
+    <strong>
+    적립금 상태
+    </strong>
+
+    <span class="small">
+    조회 기준일까지 실제로 발생한 적립금만
+    기준으로 역산한 추정값입니다.
+    </span>
+
+    </div>
+    `;
+
+
+    data.forEach(
+        item=>{
+
+            let extra="";
+
+
+            if(
+                item.amount > 0 &&
+                check < item.expiry
+            ){
+
+                const daysLeft =
+                    Math.ceil(
+                        (
+                            item.expiry -
+                            check
+                        ) /
+                        (
+                            1000*
+                            60*
+                            60*
+                            24
+                        )
+                    );
+
+
+                extra =
+                `
+                <br>
+                소멸까지 약
+                ${daysLeft}일
+                `;
+
+            }
+
+
+            html +=
+            `
+            <div class="lot">
+
+            <b>
+            ${dateKey(item.earnedDate)}
+            적립
+            </b>
+
+            <br>
+
+            적립금:
+            ${money(POINT_PER_DAY)}
+
+            <br>
+
+            소멸 예정:
+            ${dateKey(item.expiry)}
+
+            <br>
+
+            상태:
+            <span class="${item.className}">
+            ${item.status}
+            </span>
+
+            ${
+                item.amount > 0
+                ?
+                `
+                <br>
+                현재 남아있는 금액:
+                <b>
+                ${money(item.amount)}
+                </b>
+                `
+                :
+                ""
+            }
+
+            ${extra}
+
+            </div>
+            `;
+
+        }
+    );
+
+
+    if(futureLots.length > 0){
+
+        html +=
+        `
+        <div class="result">
+
+        <strong>
+        조회 기준일 이후 예정 적립금
+        </strong>
+
+        ${futureLots.length}일 /
+        ${money(
+            futureLots.length *
+            POINT_PER_DAY
+        )}
+
+        <br>
+
+        <span class="small">
+        미리 선택해둔 미래 근무일이므로
+        현재 잔여 포인트 계산에는 포함하지 않았습니다.
+        </span>
+
+        </div>
+        `;
+
+    }
+
+
+    if(remaining > 0){
+
+        html +=
+        `
+        <div class="result">
+
+        <strong>
+        계산되지 않은 잔여금
+        </strong>
+
+        ${money(remaining)}
+
+        <br>
+
+        <span class="small">
+        선택한 근무일보다 오래된 적립금이 있거나
+        실제 사용 내역과 달라서 역산되지 않은
+        금액일 수 있습니다.
+        </span>
+
+        </div>
+        `;
+
+    }
+
+
+    document.getElementById(
+        "balanceResult"
+    ).innerHTML =
+        html;
+
+}
+
+
+
+/* =========================
+   메모 저장
+========================= */
+
+function saveMemo(){
+
+    const textarea =
+        document.getElementById(
+            "memo"
+        );
+
+
+    const text =
+        textarea.value.trim();
+
+
+    if(!text){
+
+        alert(
+            "메모 내용을 입력해주세요."
+        );
+
+        return;
+
+    }
+
+
+    const now =
+        new Date();
+
+
+    const record={
+
+        id:
+            Date.now(),
+
+        date:
+            formatDateTime(now),
+
+        text:
+            text
+
+    };
+
+
+    memoList.unshift(
+        record
+    );
+
+
+    textarea.value="";
+
+
+    renderMemos();
+
+    saveAll();
+
+
+    document.getElementById(
+        "memoSaved"
+    ).textContent =
+        "메모가 저장됐어요.";
+
+}
+
+
+
+/* =========================
+   날짜+시간 표시
+========================= */
+
+function formatDateTime(date){
+
+    const y =
+        date.getFullYear();
+
+    const m =
+        String(
+            date.getMonth()+1
+        ).padStart(2,"0");
+
+    const d =
+        String(
+            date.getDate()
+        ).padStart(2,"0");
+
+    const h =
+        String(
+            date.getHours()
+        ).padStart(2,"0");
+
+    const min =
+        String(
+            date.getMinutes()
+        ).padStart(2,"0");
+
+
+    return `${y}.${m}.${d} ${h}:${min}`;
+
+}
+
+
+
+/* =========================
+   메모 화면 표시
+========================= */
+
+function renderMemos(){
+
+    const area =
+        document.getElementById(
+            "memoList"
+        );
+
+
+    area.innerHTML="";
+
+
+    if(
+        memoList.length === 0
+    ){
+
+        area.innerHTML =
+        `
+        <div class="memoEmpty">
+        아직 저장된 메모가 없습니다.
+        </div>
+        `;
+
+        return;
+
+    }
+
+
+    memoList.forEach(
+        memo=>{
+
+            const item =
+                document.createElement(
+                    "div"
+                );
+
+            item.className =
+                "memoItem";
+
+
+            const date =
+                document.createElement(
+                    "div"
+                );
+
+            date.className =
+                "memoDate";
+
+            date.textContent =
+                memo.date;
+
+
+            const text =
+                document.createElement(
+                    "div"
+                );
+
+            text.className =
+                "memoText";
+
+            text.textContent =
+                memo.text;
+
+
+            const del =
+                document.createElement(
+                    "button"
+                );
+
+            del.className =
+                "memoDelete";
+
+            del.textContent =
+                "이 메모 삭제";
+
+
+            del.onclick =
+            function(){
+
+                deleteMemo(
+                    memo.id
+                );
+
+            };
+
+
+            item.appendChild(
+                date
+            );
+
+            item.appendChild(
+                text
+            );
+
+            item.appendChild(
+                del
+            );
+
+
+            area.appendChild(
+                item
+            );
+
+        }
+    );
+
+}
+
+
+
+/* =========================
+   메모 하나 삭제
+========================= */
+
+function deleteMemo(id){
+
+    memoList =
+        memoList.filter(
+            memo =>
+                memo.id !== id
+        );
+
+
+    renderMemos();
+
+    saveAll();
+
+}
+
+
+
+/* =========================
+   메모 전체 삭제
+========================= */
+
+function clearMemos(){
+
+    if(
+        memoList.length === 0
+    ){
+
+        alert(
+            "삭제할 메모가 없습니다."
+        );
+
+        return;
+
+    }
+
+
+    const ok =
+        confirm(
+            "저장된 메모를 전부 삭제할까요?"
+        );
+
+
+    if(!ok)return;
+
+
+    memoList=[];
+
+
+    renderMemos();
+
+    saveAll();
+
+
+    document.getElementById(
+        "memoSaved"
+    ).textContent =
+        "메모 기록을 모두 삭제했어요.";
+
+}
+
+
+
+/* =========================
+   저장
+========================= */
+
+function saveAll(){
+
+    const data={
+
+        startDate:
+            startDate
+            ?
+            dateKey(startDate)
+            :
+            null,
+
+        selectedDays:
+            Array.from(
+                selectedDays
+            ),
+
+        balance:
+            document.getElementById(
+                "balance"
+            ).value,
+
+        checkDate:
+            document.getElementById(
+                "checkDate"
+            ).value,
+
+        memoList:
+            memoList
+
+    };
+
+
+    try{
+
+        localStorage.setItem(
+            "pointManagerData",
+            JSON.stringify(data)
+        );
+
+    }
+    catch(e){
+
+        // 저장공간을 지원하지 않는 환경에서는
+        // 현재 화면에서만 유지
+
+    }
+
+}
+
+
+
+/* =========================
+   불러오기
+========================= */
+
+function loadAll(){
+
+    let raw=null;
+
+
+    try{
+
+        raw =
+            localStorage.getItem(
+                "pointManagerData"
+            );
+
+    }
+    catch(e){
+
+        raw=null;
+
+    }
+
+
+    if(raw){
+
+        try{
+
+            const data =
+                JSON.parse(raw);
+
+
+            if(data.startDate){
+
+                startDate =
+                    parseDate(
+                        data.startDate
+                    );
+
+
+                endDate =
+                    addDays(
+                        startDate,
+                        EXPIRY_DAYS
+                    );
+
+
+                document.getElementById(
+                    "startDate"
+                ).value =
+                    data.startDate;
+
+
+                document.getElementById(
+                    "endDate"
+                ).textContent =
+                    dateKey(endDate);
+
+            }
+
+
+            selectedDays =
+                new Set(
+                    data.selectedDays || []
+                );
+
+
+            document.getElementById(
+                "balance"
+            ).value =
+                data.balance || "";
+
+
+            document.getElementById(
+                "checkDate"
+            ).value =
+                data.checkDate ||
+                dateKey(new Date());
+
+
+            memoList =
+                Array.isArray(
+                    data.memoList
+                )
+                ?
+                data.memoList
+                :
+                [];
+
+        }
+        catch(e){
+
+            memoList=[];
+
+        }
+
+    }
+
+
+    if(
+        !document.getElementById(
+            "checkDate"
+        ).value
+    ){
+
+        document.getElementById(
+            "checkDate"
+        ).value =
+            dateKey(
+                new Date()
+            );
+
+    }
+
+
+    drawCalendars();
+
+    updateSummary();
+
+    renderMemos();
+
+}
+
+
+
+/* =========================
+   초기화
+========================= */
+
+function resetAll(){
+
+    const ok =
+        confirm(
+            "적립금, 근무일, 포인트 조회, 메모를 모두 초기화할까요?"
+        );
+
+
+    if(!ok){
+
+        return;
+
+    }
+
+
+    memoList=[];
+
+    startDate=null;
+
+    endDate=null;
+
+    selectedDays =
+        new Set();
+
+
+    document.getElementById(
+        "startDate"
+    ).value="";
+
+
+    document.getElementById(
+        "endDate"
+    ).textContent="-";
+
+
+    document.getElementById(
+        "checkDate"
+    ).value =
+        dateKey(
+            new Date()
+        );
+
+
+    document.getElementById(
+        "balance"
+    ).value="";
+
+
+    document.getElementById(
+        "memo"
+    ).value="";
+
+
+    document.getElementById(
+        "balanceResult"
+    ).innerHTML="";
+
+
+    document.getElementById(
+        "memoSaved"
+    ).textContent =
+        "전체 데이터를 초기화했어요.";
+
+
+    try{
+
+        localStorage.removeItem(
+            "pointManagerData"
+        );
+
+    }
+    catch(e){}
+
+
+    drawCalendars();
+
+    updateSummary();
+
+    renderMemos();
+
+}
+
+
+
+/* =========================
+   실행
+========================= */
+
+loadAll();
+
+</script>
 
 </body>
 </html>
