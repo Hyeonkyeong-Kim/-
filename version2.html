@@ -64,7 +64,7 @@ button{
     font-family:inherit;
 }
 
-/* 날짜/숫자 입력칸 */
+/* 입력칸 기본 */
 input[type="date"],
 input[type="number"],
 textarea{
@@ -79,18 +79,40 @@ textarea{
     outline:none;
 }
 
-/* 날짜 입력칸 크기 및 가운데 정렬 */
+/* 날짜 입력칸 */
 input[type="date"]{
+    display:block;
     width:100%;
-    min-width:0;
     max-width:100%;
+    min-width:0;
     height:46px;
     min-height:46px;
+    max-height:46px;
     padding:0 13px;
     text-align:center;
     text-align-last:center;
     -webkit-appearance:none;
     appearance:none;
+}
+
+/* 숫자 입력칸 */
+input[type="number"]{
+    height:46px;
+    min-height:46px;
+    padding:0 13px;
+}
+
+/* iPhone에서 날짜 표시 영역도 가운데 정렬 */
+input[type="date"]::-webkit-date-and-time-value{
+    text-align:center;
+}
+
+input[type="date"]::-webkit-datetime-edit{
+    text-align:center;
+}
+
+input[type="date"]::-webkit-datetime-edit-fields-wrapper{
+    text-align:center;
 }
 
 textarea{
@@ -215,21 +237,21 @@ button{
 .day.saturday{
     color:#4d78df;
 }
-    
-.day.futureSelected{
-    background:#9aaeff;
+
+.day.selected{
+    background:#5278ff;
     color:white !important;
     font-weight:700;
 }
 
 .day.start{
-    background:#00ae83;
+    background:#00ae83 !important;
     color:white !important;
     font-weight:700;
 }
 
 .day.end{
-    background:#ed6b6b;
+    background:#ed6b6b !important;
     color:white !important;
     font-weight:700;
 }
@@ -242,6 +264,19 @@ button{
     background:#9aaeff;
     color:white !important;
     font-weight:700;
+}
+
+/* 시작일/종료일은 선택해도 원래 색상 유지 */
+.day.start.selected,
+.day.start.futureSelected{
+    background:#00ae83 !important;
+    color:white !important;
+}
+
+.day.end.selected,
+.day.end.futureSelected{
+    background:#ed6b6b !important;
+    color:white !important;
 }
 
 .small{
